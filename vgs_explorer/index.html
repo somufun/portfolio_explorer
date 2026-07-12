@@ -1,61 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>VGS Explorer</title>
 
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>
 </head>
 
 <body>
 
-  <h1>VGS ETF Explorer</h1>
+  <header class="hero">
+    <div class="hero-inner card">
+      <div class="hero-left">
+        <h1>VGS ETF Explorer</h1>
+        <p class="subtitle">Explore VGS ETF holdings, sector and country allocation.</p>
+      </div>
+
+      <div class="hero-right">
+        <label for="fileInput" class="btn btn-upload">Upload .xlsx / .csv</label>
+        <input type="file" id="fileInput" accept=".xlsx,.csv" class="visually-hidden">
+
+        <a class="download-link" href="https://www.vanguard.com.au/personal/invest-with-us/etf?portId=8212&tab=holdings" target="_blank" rel="noopener">Download latest allocation & holdings</a>
+      </div>
+    </div>
+  </header>
 
   <div>
-
-      <label>Investment ($)</label>
-
-      <input
-          type="number"
-          id="investment"
-          value="10000"
-      />
-
+    <label for="investment">Investment ($)</label>
+    <input type="number" id="investment" value="10000" />
   </div>
 
   <div>
-
-      <input
-          id="searchBox"
-          placeholder="Ticker or Company"
-      >
-
-      <button id="searchBtn">
-          Search
-      </button>
-
+    <label for="searchBox" class="visually-hidden">Search ticker or company</label>
+    <input id="searchBox" class="search-input" type="search" placeholder="Ticker or Company" aria-label="Search ticker or company">
+    <button id="searchBtn" class="btn" type="button">Search</button>
   </div>
+
+  <div>
+    <label for="countrySearch" class="visually-hidden">Search by country</label>
+    <input id="countrySearch" list="countryList" class="search-input" type="search" placeholder="Country (e.g. United States)" aria-label="Search by country">
+    <datalist id="countryList"></datalist>
+    <button id="countrySearchBtn" class="btn" type="button">Search Country</button>
+  </div>
+
+  <div id="summaryCards" class="summary-grid"></div>
 
   <div id="searchResult"></div>
+  <div id="countryResult"></div>
+
+  <p class="download-instructions">How to download: clicking the "Download latest allocation & holdings" link opens Vanguard's holdings page. On that page open the <strong>Holdings</strong> tab, look for a "Download" or "Export" button near the table (choose the XLSX option where available), save the file to your computer, then upload it using the <strong>Upload .xlsx / .csv</strong> button above.</p>
 
   <h2>Top 10 Holdings</h2>
   <canvas id="topChart"></canvas>
 
-  <h2>Sector Allocation</h2>
-  <canvas id="sectorChart"></canvas>
+  <h2>Top holdings</h2>
+  <div id="topHoldingsTable"></div>
 
   <h2>Upload New Holdings</h2>
+  <label for="fileInput">Upload file (.xlsx, .csv)</label>
+  <input type="file" id="fileInput" accept=".xlsx,.csv" />
+<h2>Country Allocation</h2>
 
-  <input
-      type="file"
-      id="fileInput"
-      accept=".xlsx,.csv"
-  />
+<canvas id="countryChart"></canvas>
 
   <script src="script.js"></script>
+
+
 
 </body>
 </html>

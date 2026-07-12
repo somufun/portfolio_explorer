@@ -6,6 +6,7 @@ let holdings = [];
 
 let topChart = null;
 let sectorChart = null;
+let countryChart = null;
 
 // ================================
 // INITIALIZATION
@@ -24,6 +25,11 @@ function setupEvents() {
     document
         .getElementById("searchBtn")
         .addEventListener("click", searchHolding);
+
+    const countryBtn = document.getElementById("countrySearchBtn");
+    if (countryBtn) {
+        countryBtn.addEventListener("click", searchByCountry);
+    }
 
     document
         .getElementById("investment")
@@ -156,14 +162,63 @@ function parseVanguardSheet(rows) {
 // ================================
 
 function renderDashboard() {
-
     if (!holdings.length) return;
+
+    renderSummaryCards();
 
     renderTop10Chart();
 
     renderSectorChart();
 
+    renderCountryChart();
+
     renderTopHoldingsTable();
+    populateCountryAutocomplete();
+}
+
+function populateCountryAutocomplete() {
+    const list = document.getElementById('countryList');
+    if (!list) return;
+
+    // clear existing options
+    list.innerHTML = '';
+
+    const countries = Array.from(new Set(holdings.map(h => (h.country || '').trim()).filter(Boolean)));
+    countries.sort((a,b)=> a.localeCompare(b));
+
+    countries.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        list.appendChild(opt);
+    });
+}
+
+function renderCountryChart() {
+    const countries = {};
+
+    holdings.forEach(h => {
+        const key = h.country || "Unknown";
+        if (!countries[key]) countries[key] = 0;
+        countries[key] += h.weight;
+    });
+
+    const labels = Object.keys(countries);
+    const data = Object.values(countries);
+
+    const ctx = document.getElementById("countryChart");
+
+    if (countryChart) {
+        countryChart.destroy();
+    }
+
+    countryChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+            labels,
+            datasets: [{ data }]
+        },
+        options: { responsive: true }
+    });
 }
 
 // ================================
@@ -390,6 +445,51 @@ function searchHolding() {
     `;
 }
 
+function searchByCountry() {
+
+    const q = (document.getElementById("countrySearch").value || "").trim().toLowerCase();
+
+    const resultDiv = document.getElementById("countryResult");
+
+    if (!q) {
+        resultDiv.innerHTML = `<div class="card">Enter a country to search.</div>`;
+        return;
+    }
+
+    const matches = holdings.filter(h => (h.country || "").toLowerCase().includes(q));
+
+    if (!matches.length) {
+        resultDiv.innerHTML = `<div class="card">No holdings found for "${q}".</div>`;
+        return;
+    }
+
+    const totalWeight = matches.reduce((s, h) => s + (h.weight || 0), 0);
+
+    const investment = getInvestmentAmount();
+
+    const allocation = investment * totalWeight / 100;
+
+    let html = `
+        <div class="card">
+            <h3>Country: ${matches[0].country}</h3>
+            <p><strong>Total allocation:</strong> ${totalWeight.toFixed(3)}%</p>
+            <p><strong>Your allocation:</strong> ${formatCurrency(allocation)}</p>
+            <h4>Holdings</h4>
+            <table>
+                <thead><tr><th>Company</th><th>Ticker</th><th>Weight</th><th>Allocation</th></tr></thead>
+                <tbody>
+    `;
+
+    matches.forEach(h => {
+        const amt = investment * h.weight / 100;
+        html += `<tr><td>${h.company}</td><td>${h.ticker}</td><td>${h.weight.toFixed(3)}%</td><td>${formatCurrency(amt)}</td></tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+
+    resultDiv.innerHTML = html;
+}
+
 // ================================
 // TOP HOLDINGS TABLE
 // ================================
@@ -460,4 +560,58 @@ function formatCurrency(value) {
             currency: "AUD"
         }
     ).format(value);
+}
+
+function renderSummaryCards() {
+
+    const investment = getInvestmentAmount();
+
+    const largestHolding =
+        [...holdings].sort(
+            (a,b) => b.weight - a.weight
+        )[0];
+
+    const sectors = getSectorTotals();
+
+    const largestSector =
+        Object.entries(sectors)
+            .sort((a,b)=>b[1]-a[1])[0];
+
+    const top10Weight =
+        getTop10()
+            .reduce(
+                (sum,h)=>sum+h.weight,
+                0
+            );
+
+    document.getElementById(
+        "summaryCards"
+    ).innerHTML = `
+
+        <div class="card metric-card">
+            <h3>Portfolio</h3>
+            <span>${formatCurrency(investment)}</span>
+        </div>
+
+        <div class="card metric-card">
+            <h3>Holdings</h3>
+            <span>${holdings.length}</span>
+        </div>
+
+        <div class="card metric-card">
+            <h3>Largest Holding</h3>
+            <span>${largestHolding.company}</span>
+        </div>
+
+        <div class="card metric-card">
+            <h3>Top 10 Concentration</h3>
+            <span>${top10Weight.toFixed(2)}%</span>
+        </div>
+
+        <div class="card metric-card">
+            <h3>Largest Sector</h3>
+            <span>${largestSector[0]}</span>
+        </div>
+
+    `;
 }
