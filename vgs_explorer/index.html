@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VGS Explorer</title>
+
+  <link rel="stylesheet" href="styles.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+  <h1>VGS ETF Explorer</h1>
+
+  <div>
+
+      <label>Investment ($)</label>
+
+      <input
+          type="number"
+          id="investment"
+          value="10000"
+      />
+
+  </div>
+
+  <div>
+
+      <input
+          id="searchBox"
+          placeholder="Ticker or Company"
+      >
+
+      <button id="searchBtn">
+          Search
+      </button>
+
+  </div>
+
+  <div id="searchResult"></div>
+
+  <h2>Top 10 Holdings</h2>
+  <canvas id="topChart"></canvas>
+
+  <h2>Sector Allocation</h2>
+  <canvas id="sectorChart"></canvas>
+
+  <h2>Upload New Holdings</h2>
+
+  <input
+      type="file"
+      id="fileInput"
+      accept=".xlsx,.csv"
+  />
+
+  <script src="script.js"></script>
+
+</body>
+</html>
